@@ -18,7 +18,7 @@ var _reactClickOutside = require('react-click-outside');
 
 var _reactClickOutside2 = _interopRequireDefault(_reactClickOutside);
 
-var _popper = require('../../vendor/popper');
+var _popper = require('popper.js');
 
 var _popper2 = _interopRequireDefault(_popper);
 
@@ -51,6 +51,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var sizeMap = {
+  'large': 42,
+  'small': 30,
+  'mini': 22
+};
 
 var Select = function (_Component) {
   _inherits(Select, _Component);
@@ -262,7 +268,7 @@ var Select = function (_Component) {
           }
         }
 
-        // this.broadcast('select-dropdown', 'updatePopper');
+        this.popperJS.update();
 
         if (filterable) {
           query = selectedLabel;
@@ -398,7 +404,9 @@ var Select = function (_Component) {
           this.refs.input.focus();
         }
 
-        this.setState({ valueChangeBySelected: valueChangeBySelected, query: query, hoverIndex: hoverIndex, inputLength: inputLength });
+        this.setState({ valueChangeBySelected: valueChangeBySelected, query: query, hoverIndex: hoverIndex, inputLength: inputLength }, function () {
+          _this4.refs.input.value = '';
+        });
       } else {
         if (selectedInit) {
           return this.setState({
@@ -424,7 +432,8 @@ var Select = function (_Component) {
           options = _state5.options,
           optionsCount = _state5.optionsCount;
 
-      // this.broadcast('select-dropdown', 'updatePopper');
+
+      this.popperJS.update();
 
       if (multiple && filterable) {
         this.resetInputHeight();
@@ -624,9 +633,9 @@ var Select = function (_Component) {
         return item.tagName === 'INPUT';
       })[0];
 
-      input.style.height = Math.max(this.refs.tags.clientHeight + 6, this.size === 'small' ? 28 : 36) + 'px';
+      input.style.height = Math.max(this.refs.tags.clientHeight + 6, sizeMap[this.props.size] || 36) + 'px';
 
-      // this.broadcast('select-dropdown', 'updatePopper');
+      this.popperJS.update();
     }
   }, {
     key: 'resetHoverIndex',
@@ -781,7 +790,6 @@ var Select = function (_Component) {
   }, {
     key: 'deleteTag',
     value: function deleteTag(tag) {
-      // let { selected } = this.state;
       var selected = this.state.selected.slice(0);
       var index = selected.indexOf(tag);
 
@@ -824,8 +832,10 @@ var Select = function (_Component) {
       }
 
       this.setState(this.state, function () {
-        _this7.state.options.forEach(function (option) {
-          option.resetIndex();
+        _this7.state.options.forEach(function (el) {
+          if (el != option) {
+            el.resetIndex();
+          }
         });
       });
     }
@@ -940,18 +950,28 @@ var Select = function (_Component) {
             type: 'text',
             className: 'el-select__input',
             style: { width: inputLength, maxWidth: inputWidth - 42 },
-            value: query,
+            defaultValue: query,
+            onKeyUp: this.managePlaceholder.bind(this),
+            onChange: function onChange(e) {
+              clearTimeout(_this9.timeout);
+
+              _this9.timeout = setTimeout(function () {
+                _this9.setState({
+                  query: _this9.state.value
+                });
+              }, _this9.debounce());
+
+              _this9.state.value = e.target.value;
+            },
             onKeyDown: function onKeyDown(e) {
-              // this.resetInputState();
-              // onChange={this.debouncedOnInputChange}
-              // onKeyUp={this.managePlaceholder.bind(this)}
+              _this9.resetInputState(e);
 
               switch (e.keyCode) {
                 case 27:
                   _this9.setState({ visible: false });e.preventDefault();
                   break;
                 case 8:
-                  _this9.deletePrevTag();
+                  _this9.deletePrevTag(e);
                   break;
                 case 13:
                   _this9.selectOption();e.preventDefault();
@@ -1071,6 +1091,8 @@ var _temp = function () {
   if (typeof __REACT_HOT_LOADER__ === 'undefined') {
     return;
   }
+
+  __REACT_HOT_LOADER__.register(sizeMap, 'sizeMap', 'src/select/Select.jsx');
 
   __REACT_HOT_LOADER__.register(Select, 'Select', 'src/select/Select.jsx');
 
