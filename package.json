@@ -1,8 +1,7 @@
 {
-  "name": "element-react",
-  "version": "1.0.0-alpha.5",
+  "name": "@tencent/element-ui",
+  "version": "1.0.0-alpha.7",
   "description": "Element UI for React",
-  "private": true,
   "main": "dist/npm/index.js",
   "jsnext:main": "next.js",
   "scripts": {
@@ -15,19 +14,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eleme/element-react.git"
+    "url": "git+https://github.com/allanfish/elementui.git"
   },
   "keywords": [
     "Element",
     "UI",
     "React"
   ],
-  "author": "ELEME Inc",
+  "author": "allanyu",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/eleme/element-react/issues"
+    "url": "https://github.com/allanfish/elementui/issues"
   },
-  "homepage": "https://github.com/eleme/element-react#readme",
+  "homepage": "https://github.com/allanfish/elementui#readme",
   "devDependencies": {
     "babel-cli": "^6.18.0",
     "babel-jest": "^18.0.0",
