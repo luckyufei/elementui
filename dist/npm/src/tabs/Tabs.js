@@ -55,7 +55,7 @@ var Tabs = function (_Component) {
       if (nextProps.activeName !== this.props.activeName) {
         this.setState({
           currentName: nextProps.activeName,
-          children: nextProps.children,
+          children: nextProps.children
         }, function () {
           return _this2.calcBarStyle();
         });

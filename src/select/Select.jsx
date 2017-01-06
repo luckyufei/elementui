@@ -73,12 +73,12 @@ class Select extends Component {
       });
     } else {
       const selected = options.filter(option => {
-         return option.props.value === value
-       })[0];
+        return option.props.value === value
+      })[0];
 
-       if (selected) {
-         this.state.selectedLabel = selected.props.label;
-       }
+      if (selected) {
+        this.state.selectedLabel = selected.props.label;
+      }
     }
 
     if (selected) {
@@ -129,7 +129,7 @@ class Select extends Component {
   }
 
   componentWillUnMount() {
-    if (this.resetInputWidth()){
+    if (this.resetInputWidth()) {
       removeResizeListener(this.root, this.resetInputWidth.bind(this));
     }
   }
@@ -241,7 +241,7 @@ class Select extends Component {
       currentPlaceholder = cachedPlaceHolder;
 
       val.forEach(item => {
-        let option = this.options.filter(option => option.props.value === item)[0];
+        let option =  this.options && this.options.filter(option => option.props.value === item)[0];
         if (option) {
           this.addOptionToValue(option);
         }
@@ -300,7 +300,7 @@ class Select extends Component {
       }
 
       this.setState({ valueChangeBySelected, query, hoverIndex, inputLength }, () => {
-        this.refs.input.value = '';
+        if (filterable) this.refs.input.value = '';
       });
     } else {
       if (selectedInit) {
@@ -348,7 +348,7 @@ class Select extends Component {
   }
 
   optionsAllDisabled(options) {
-     return options.length === (options.filter(item => item.props.disabled === true).length);
+    return options.length === (options.filter(item => item.props.disabled === true).length);
   }
 
   iconClass() {
@@ -544,8 +544,8 @@ class Select extends Component {
         this.resetScrollTop();
 
         if (options[hoverIndex].props.disabled === true ||
-            options[hoverIndex].props.groupDisabled === true ||
-           !options[hoverIndex].state.visible ) {
+          options[hoverIndex].props.groupDisabled === true ||
+          !options[hoverIndex].state.visible) {
           skip = 'next';
         }
       }
@@ -560,8 +560,8 @@ class Select extends Component {
         this.resetScrollTop();
 
         if (options[hoverIndex].props.disabled === true ||
-            options[hoverIndex].props.groupDisabled === true ||
-           !options[hoverIndex].state.visible ) {
+          options[hoverIndex].props.groupDisabled === true ||
+          !options[hoverIndex].state.visible) {
           skip = 'prev';
         }
       }
@@ -714,9 +714,9 @@ class Select extends Component {
 
     return (
       <div style={this.style()} className={this.className('el-select', {
-          'is-multiple': multiple,
-          'is-small': size === 'small'
-        })}>
+        'is-multiple': multiple,
+        'is-small': size === 'small'
+      })}>
         {
           multiple && (
             <div ref="tags" className="el-select__tags" onClick={this.toggleMenu.bind(this)} style={{
@@ -732,7 +732,7 @@ class Select extends Component {
                       closable={true}
                       closeTransition={true}
                       onClose={this.deleteTag.bind(this, el)}
-                    >{el.currentLabel()}</Tag>
+                      >{el.currentLabel()}</Tag>
                   )
                 })
               }
@@ -755,7 +755,7 @@ class Select extends Component {
                       }, this.debounce());
 
                       this.state.value = e.target.value;
-                    }}
+                    } }
                     onKeyDown={e => {
                       this.resetInputState(e);
 
@@ -778,8 +778,8 @@ class Select extends Component {
                         default:
                           break;
                       }
-                    }}
-                  />
+                    } }
+                    />
                 )
               }
             </div>
@@ -818,8 +818,8 @@ class Select extends Component {
               default:
                 break;
             }
-          }}
-        />
+          } }
+          />
         <Transition name="md-fade-bottom" duration="200">
           <View show={visible && this.emptyText() !== false}>
             <Dropdown ref="popper">
@@ -828,7 +828,7 @@ class Select extends Component {
                   {this.props.children}
                 </ul>
               </View>
-              { this.emptyText() && <p className="el-select-dropdown__empty">{this.emptyText()}</p> }
+              {this.emptyText() && <p className="el-select-dropdown__empty">{this.emptyText()}</p>}
             </Dropdown>
           </View>
         </Transition>

@@ -326,7 +326,7 @@ var Select = function (_Component) {
         currentPlaceholder = cachedPlaceHolder;
 
         val.forEach(function (item) {
-          var option = _this3.options.filter(function (option) {
+          var option = _this3.options && _this3.options.filter(function (option) {
             return option.props.value === item;
           })[0];
           if (option) {
@@ -405,7 +405,7 @@ var Select = function (_Component) {
         }
 
         this.setState({ valueChangeBySelected: valueChangeBySelected, query: query, hoverIndex: hoverIndex, inputLength: inputLength }, function () {
-          _this4.refs.input.value = '';
+          if (filterable) _this4.refs.input.value = '';
         });
       } else {
         if (selectedInit) {
