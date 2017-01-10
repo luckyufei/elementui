@@ -187,8 +187,8 @@ var Select = function (_Component) {
       }
     }
   }, {
-    key: 'componentWillUnMount',
-    value: function componentWillUnMount() {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
       if (this.resetInputWidth()) {
         (0, _resizeEvent.removeResizeListener)(this.root, this.resetInputWidth.bind(this));
       }

@@ -76,8 +76,8 @@ var FormItem = function (_Component) {
       }
     }
   }, {
-    key: 'componentWillUnMount',
-    value: function componentWillUnMount() {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
       this.parent().removeField(this);
     }
   }, {
@@ -242,10 +242,10 @@ var FormItem = function (_Component) {
           'div',
           { className: 'el-form-item__content', style: this.contentStyle() },
           this.props.children,
-          _react2.default.createElement(
+          error && _react2.default.createElement(
             _libs.Transition,
             { name: 'md-fade-bottom' },
-            error && _react2.default.createElement(
+            _react2.default.createElement(
               'div',
               { className: 'el-form-item__error' },
               error

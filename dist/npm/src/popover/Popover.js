@@ -101,8 +101,8 @@ var Popover = function (_Component) {
       }
     }
   }, {
-    key: 'componentWillUnMount',
-    value: function componentWillUnMount() {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
       this.reference.parentNode.replaceChild(this.reference.cloneNode(true), this.reference);
     }
   }, {

@@ -128,7 +128,7 @@ class Select extends Component {
     }
   }
 
-  componentWillUnMount() {
+  componentWillUnmount() {
     if (this.resetInputWidth()) {
       removeResizeListener(this.root, this.resetInputWidth.bind(this));
     }

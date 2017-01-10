@@ -63,9 +63,11 @@
     "async-validator": "^1.6.8",
     "classnames": "^2.2.5",
     "popper.js": "^0.6.4",
+    "react": "^15.4.1",
     "react-addons-css-transition-group": "^15.4.1",
     "react-addons-transition-group": "^15.4.1",
-    "react-click-outside": "^2.2.0"
+    "react-click-outside": "^2.2.0",
+    "react-dom": "^15.4.1"
   },
   "jest": {
     "testRegex": "/jest/.+\\.(js|jsx)$",
