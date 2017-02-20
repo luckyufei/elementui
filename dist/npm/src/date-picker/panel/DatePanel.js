@@ -320,7 +320,10 @@ var DatePanel = function (_Component) {
       var yearTranslation = _locale2.default.t('el.datepicker.year');
       if (currentView === 'year') {
         var startYear = Math.floor(year / 10) * 10;
-        return startYear + ' ' + yearTranslation + '-' + (startYear + 9) + ' ' + yearTranslation;
+        if (yearTranslation) {
+          return startYear + ' ' + yearTranslation + '-' + (startYear + 9) + ' ' + yearTranslation;
+        }
+        return startYear + ' - ' + (startYear + 9);
       }
       return year + ' ' + yearTranslation;
     }
@@ -382,8 +385,7 @@ var DatePanel = function (_Component) {
 
       var _props4 = this.props,
           showTime = _props4.showTime,
-          shortcuts = _props4.shortcuts,
-          sidebar = _props4.sidebar;
+          shortcuts = _props4.shortcuts;
       var _state4 = this.state,
           currentView = _state4.currentView,
           date = _state4.date;
@@ -399,7 +401,7 @@ var DatePanel = function (_Component) {
         {
           ref: 'root',
           className: this.classNames('el-picker-panel el-date-picker', {
-            'has-sidebar': !!sidebar || shortcuts,
+            'has-sidebar': shortcuts,
             'has-time': showTime
           }) },
         _react2.default.createElement(
@@ -536,7 +538,6 @@ DatePanel.propTypes = {
   showTime: _libs.PropTypes.bool,
   showWeekNumber: _libs.PropTypes.bool,
   format: _libs.PropTypes.string,
-  // todo: constrait onClick method ? change to type: ()=>() ?
   // Array[{text: String, onClick: (picker)=>()}]
   shortcuts: _libs.PropTypes.arrayOf(_react2.default.PropTypes.shape({
     text: _libs.PropTypes.string.isRequired,

@@ -6,13 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.PopperMixin = PopperMixin;
 exports.PopperReactMixin = PopperReactMixin;
 
-var _popper = require('popper.js');
-
-var _popper2 = _interopRequireDefault(_popper);
-
 var _assert = require('./assert');
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var PopperJS;
 
 var MixinMethods = {
   //---------- start: public methods
@@ -56,7 +52,7 @@ var MixinMethods = {
       popperOptions.offset = offset;
     }
 
-    this._poperJS = new _popper2.default(reference, popper, popperOptions);
+    this._poperJS = new PopperJS(reference, popper, popperOptions);
 
     this._poperJS.onCreate(function () {
       _this._resetTransformOrigin();
@@ -132,6 +128,7 @@ var PopperReactMixinMethods = {
       (0, _assert.require_condition)(root, 'method `getPopperRootDom()` require a HTMLElement instance when componentDidMount is called');
       (0, _assert.require_condition)(ref, 'method `getRefDom()` require a HTMLElement instance when componentDidMount is called');
 
+      PopperJS = require('popper.js');
       this.createPopper(root, ref);
       this._animateRef = window.requestAnimationFrame(this.updatePopper.bind(this));
 
@@ -191,6 +188,8 @@ var _temp = function () {
   if (typeof __REACT_HOT_LOADER__ === 'undefined') {
     return;
   }
+
+  __REACT_HOT_LOADER__.register(PopperJS, 'PopperJS', 'libs/utils/popper-mixins.js');
 
   __REACT_HOT_LOADER__.register(MixinMethods, 'MixinMethods', 'libs/utils/popper-mixins.js');
 

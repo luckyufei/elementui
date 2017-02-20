@@ -1,6 +1,6 @@
 import React from 'react';
-import Popper from 'popper.js';
 import { Component, PropTypes, Transition, View } from '../../libs';
+var Popper;
 
 export default class Tooltip extends Component {
   constructor(props) {
@@ -9,10 +9,6 @@ export default class Tooltip extends Component {
     this.state = {
       showPopper: false
     }
-  }
-
-  componentDidMount() {
-    this.initialPopper();
   }
 
   componentWillReceiveProps(props) {
@@ -24,18 +20,32 @@ export default class Tooltip extends Component {
   }
 
   componentDidUpdate() {
-    this.initialPopper();
+    const { showPopper } = this.state;
+
+    if (showPopper) {
+      if (this.popperJS) {
+        this.popperJS.update();
+      } else {
+        const { popper, reference, arrow } = this.refs;
+        const { placement } = this.props;
+
+        if (arrow) {
+          arrow.setAttribute('x-arrow', '');
+        }
+        Popper = require('popper.js');
+        this.popperJS = new Popper(reference, popper, { placement });
+      }
+    } else {
+      if (this.popperJS) {
+        this.popperJS.destroy();
+      }
+    }
   }
 
-  initialPopper() {
-    const { popper, reference, arrow } = this.refs;
-    const { placement } = this.props;
-
-    if (arrow) {
-      arrow.setAttribute('x-arrow', '');
+  componentWillUnMount() {
+    if (this.popperJS) {
+      this.popperJS.destroy();
     }
-
-    this.popper = new Popper(reference, popper, { placement });
   }
 
   showPopper() {

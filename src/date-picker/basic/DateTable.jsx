@@ -1,32 +1,35 @@
 import React from 'react'
 
 import { PropTypes, Component } from '../../../libs';
-import { 
-  getFirstDayOfMonth, 
-  getDayCountOfMonth, 
-  getWeekNumber, 
-  getStartDateOfMonth, 
-  DAY_DURATION, 
+import {
+  toDate,
+  getFirstDayOfMonth,
+  getDayCountOfMonth,
+  getWeekNumber,
+  getStartDateOfMonth,
+  DAY_DURATION,
   SELECTION_MODES,
   deconstructDate,
-  hasClass} from '../utils'
+  hasClass,
+  getOffsetToWeekOrigin
+} from '../utils'
 import Locale from '../../locale'
 
 /*
   todo:
     clear ?
 */
-
 function isFunction(func) {
   return typeof func === 'function'
 }
 
-//todo:rename:  reset midnight
 const clearHours = function (time) {
   const cloneDate = new Date(time);
   cloneDate.setHours(0, 0, 0, 0);
   return cloneDate.getTime();
 };
+
+const WEEKS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
 export default class DateTable extends Component {
   constructor(props) {
@@ -34,40 +37,28 @@ export default class DateTable extends Component {
 
     this.state = {
       tableRows: [[], [], [], [], [], []],
-      rangeState: {},
     }
   }
 
 
-  componentWillReceiveProps(nextProps) {
-    const minDate = (newVal, oldVal) => {
-      const {rangeState} = this.state
-      if (newVal && !oldVal) {
-        rangeState.selecting = true;
-      } else if (!newVal) {
-        rangeState.selecting = false;
-      }
-    }
-
-    const maxDate = (newVal, oldVal) => {
-      if (newVal && !oldVal) {
-        this.state.rangeState.selecting = false;
-      }
-    }
-
-    minDate(nextProps.minDate, this.props.minDate)
-    maxDate(nextProps.maxDate, this.props.maxDate)
-
-    this.setState({})
+  WEEKS() {
+    // 0-6
+    const week = this.getOffsetWeek();
+    return WEEKS.slice(week).concat(WEEKS.slice(0, week));
   }
+
+  getOffsetWeek(){
+    return this.props.firstDayOfWeek % 7;
+  }
+
 
   getStartDate() {
     const ds = deconstructDate(this.props.date)
-    return getStartDateOfMonth(ds.year, ds.month);
+    return getStartDateOfMonth(ds.year, ds.month, this.getOffsetWeek());
   }
 
   getRows() {
-    const {date, disabledDate, showWeekNumber, minDate, maxDate, selectionMode} = this.props
+    const {date, disabledDate, showWeekNumber, minDate, maxDate, selectionMode, firstDayOfWeek} = this.props
     const {tableRows} = this.state
 
     const ndate = new Date(date.getTime());
@@ -76,7 +67,8 @@ export default class DateTable extends Component {
     // dates count in december is always 31, so offset year is not neccessary
     const dateCountOfLastMonth = getDayCountOfMonth(ndate.getFullYear(), (ndate.getMonth() === 0 ? 11 : ndate.getMonth() - 1));
 
-    day = (day === 0 ? 7 : day);
+    const offsetDaysToWeekOrigin = getOffsetToWeekOrigin(day, firstDayOfWeek);
+
     //tableRows: [ [], [], [], [], [], [] ]
     const rows = tableRows;
     let count = 1;
@@ -84,6 +76,7 @@ export default class DateTable extends Component {
 
     const startDate = this.getStartDate();
     const now = clearHours(new Date());
+    
 
     for (var i = 0; i < 6; i++) {
       const row = rows[i];
@@ -125,13 +118,13 @@ export default class DateTable extends Component {
         }
 
         if (i === 0) {//handle first row of date, this row only contains all or some pre-month dates
-          if (j >= day) {
+          if (j >= (offsetDaysToWeekOrigin === 0 ? 7 : offsetDaysToWeekOrigin)) {
             cell.text = count++;
             if (count === 2) {
               firstDayPosition = i * 7 + j;
             }
           } else {
-            cell.text = dateCountOfLastMonth - (day - j % 7) + 1;
+            cell.text = dateCountOfLastMonth - offsetDaysToWeekOrigin + j + 1;
             cell.type = 'prev-month';
           }
         } else {
@@ -181,11 +174,12 @@ export default class DateTable extends Component {
       classes.push(cell.type);
     }
 
-    if (selectionMode === 'day' 
-        && (cell.type === 'normal' || cell.type === 'today') 
-        && value.getFullYear() === date.getFullYear() 
-        && value.getMonth() === date.getMonth() 
-        && value.getDate() === Number(cell.text)) {
+    if (selectionMode === 'day'
+      && (cell.type === 'normal' || cell.type === 'today')
+      && value
+      && value.getFullYear() === date.getFullYear()
+      && value.getMonth() === date.getMonth()
+      && value.getDate() === Number(cell.text)) {
       classes.push('current');
     }
 
@@ -208,8 +202,33 @@ export default class DateTable extends Component {
     return classes.join(' ');
   }
 
+  getMarkedRangeRows() {
+    const {showWeekNumber, minDate, selectionMode, rangeState} = this.props
+    const rows = this.getRows();
+    if (!(selectionMode === SELECTION_MODES.RANGE && rangeState.selecting && rangeState.endDate instanceof Date)) return rows;
+
+    const maxDate = rangeState.endDate
+    for (var i = 0, k = rows.length; i < k; i++) {
+      const row = rows[i];
+      for (var j = 0, l = row.length; j < l; j++) {
+        if (showWeekNumber && j === 0) continue;
+
+        const cell = row[j];
+        const index = i * 7 + j + (showWeekNumber ? -1 : 0);
+        const time = this.getStartDate().getTime() + DAY_DURATION * index;
+
+        cell.inRange = minDate && time >= clearHours(minDate) && time <= clearHours(maxDate);
+        cell.start = minDate && time === clearHours(minDate.getTime());
+        cell.end = maxDate && time === clearHours(maxDate.getTime());
+      }
+    }
+
+    return rows;
+  }
+
   isWeekActive(cell) {
     if (this.props.selectionMode !== SELECTION_MODES.WEEK) return false;
+    if (!this.props.value) return false;
 
     const newDate = new Date(this.props.date.getTime())// date view
     const year = newDate.getFullYear();
@@ -229,63 +248,25 @@ export default class DateTable extends Component {
     return getWeekNumber(newDate) === deconstructDate(this.props.value).week // current date value
   }
 
-  //end: watch props change:
-  //end: -todo
-
-  //todo: change view here
-  markRange(maxDate) {
-
-    if (!maxDate) {
-      maxDate = this.props.maxDate
-    }
-
-    const rows = this.getRows();
-    const minDate = this.props.minDate;
-    for (var i = 0, k = rows.length; i < k; i++) {
-      const row = rows[i];
-      for (var j = 0, l = row.length; j < l; j++) {
-        if (this.showWeekNumber && j === 0) continue;
-
-        const cell = row[j];
-        const index = i * 7 + j + (this.showWeekNumber ? -1 : 0);
-        const time = this.getStartDate().getTime() + DAY_DURATION * index;
-
-        cell.inRange = minDate && time >= clearHours(minDate) && time <= clearHours(maxDate);
-        cell.start = minDate && time === clearHours(minDate.getTime());
-        cell.end = maxDate && time === clearHours(maxDate.getTime());
-      }
-    }
-  }
 
   handleMouseMove(event) {
-    const {onChangeRange, showWeekNumber, minDate, maxDate} = this.props
-    const {rangeState} = this.state
+    const {showWeekNumber, onChangeRange, rangeState, selectionMode} = this.props
+
     const getDateOfCell = (row, column, showWeekNumber) => {
       const startDate = this.getStartDate();
-
       return new Date(startDate.getTime() + (row * 7 + (column - (showWeekNumber ? 1 : 0))) * DAY_DURATION);
     }
 
-    if (!rangeState.selecting) return;
-
-    // todo: - is this cb useful?
-    onChangeRange({ minDate, maxDate, rangeState });
+    if (!(selectionMode === SELECTION_MODES.RANGE && rangeState.selecting)) return;
 
     const target = event.target;
     if (target.tagName !== 'TD') return;
 
     const column = target.cellIndex;
     const row = target.parentNode.rowIndex - 1;
-    const { row: oldRow, column: oldColumn } = rangeState;
 
-    if (oldRow !== row || oldColumn !== column) {
-      rangeState.row = row;
-      rangeState.column = column;
-
-      rangeState.endDate = getDateOfCell(row, column, showWeekNumber);
-
-      this.setState({ rangeState })
-    }
+    rangeState.endDate = getDateOfCell(row, column, showWeekNumber);
+    onChangeRange(rangeState)
   }
 
   handleClick(event) {
@@ -294,10 +275,9 @@ export default class DateTable extends Component {
     if (target.tagName !== 'TD') return;
     if (hasClass(target, 'disabled') || hasClass(target, 'week')) return;
 
-    const {selectionMode, date, onPick, minDate, maxDate} = this.props
+    const {selectionMode, date, onPick, minDate, maxDate, rangeState, } = this.props
     const {year, month} = deconstructDate(date)
 
-    const {rangeState} = this.state
     if (selectionMode === 'week') {
       target = target.parentNode.cells[1];
     }
@@ -310,8 +290,6 @@ export default class DateTable extends Component {
     const className = target.className;
 
     const newDate = new Date(year, month, 1);
-
-    const clickNormalCell = className.indexOf('prev') === -1 && className.indexOf('next') === -1;
 
     if (className.indexOf('prev') !== -1) {
       if (month === 0) {
@@ -330,37 +308,34 @@ export default class DateTable extends Component {
     }
 
     newDate.setDate(parseInt(text, 10));
-
-    if (clickNormalCell && selectionMode === 'range') {
-      if (minDate && maxDate) { //reset range
-        onPick({ minDate: new Date(newDate.getTime()), maxDate: null }, false)
-        rangeState.selecting = true;//range is in selection
-      } else if (minDate && !maxDate) {
-        if (newDate >= minDate) {
+    if (selectionMode === SELECTION_MODES.RANGE) {
+      if (rangeState.selecting) {
+        if (newDate < minDate) {
+          rangeState.selecting = true;
+          onPick({ minDate: toDate(newDate), maxDate: null }, false)
+        } else if (newDate >= minDate) {
           rangeState.selecting = false;
-          onPick({ minDate, maxDate: new Date(newDate.getTime()) })
-        } else {
-          onPick({ minDate: new Date(newDate.getTime()), maxDate }, false)
+          onPick({ minDate, maxDate: toDate(newDate) }, true)
         }
-      } else if (!minDate) {
-        onPick({ minDate: new Date(newDate.getTime()), maxDate }, false)
-        rangeState.selecting = true;
-      }
-      this.setState({})
-    }
+      } else {
+        if (minDate && maxDate || !minDate) {
+          // be careful about the rangeState & onPick order
+          // since rangeState is a object, mutate it will make child DateTable see the 
+          // changes, but wont trigger a DateTable re-render. but onPick would trigger it.
+          // so a reversed order may cause a bug.
+          rangeState.selecting = true;
+          onPick({ minDate: toDate(newDate), maxDate: null }, false)
+        }
 
-    //todo: merge this
-    if (selectionMode === 'day') {
-      onPick({date: newDate})
-    } else if (selectionMode === 'week') {
-      onPick({date: newDate})
+      }
+    } else if (selectionMode === SELECTION_MODES.DAY || selectionMode === SELECTION_MODES.WEEK) {
+      onPick({ date: newDate })
     }
   }
 
   render() {
     const $t = Locale.t
     const {selectionMode, showWeekNumber} = this.props
-    const {value} = this.state
 
     return (
       <table
@@ -370,23 +345,20 @@ export default class DateTable extends Component {
         onMouseMove={this.handleMouseMove.bind(this)}
         className={this.classNames('el-date-table', { 'is-week-mode': selectionMode === 'week' })}>
         <tbody>
+        
           <tr>
             {showWeekNumber && <th>{$t('el.datepicker.week')}</th>}
-            <th>{$t('el.datepicker.weeks.sun')}</th>
-            <th>{$t('el.datepicker.weeks.mon')}</th>
-            <th>{$t('el.datepicker.weeks.tue')}</th>
-            <th>{$t('el.datepicker.weeks.wed')}</th>
-            <th>{$t('el.datepicker.weeks.thu')}</th>
-            <th>{$t('el.datepicker.weeks.fri')}</th>
-            <th>{$t('el.datepicker.weeks.sat')}</th>
+            {
+              this.WEEKS().map((e, idx)=> <th key={idx}>{$t(`el.datepicker.weeks.${e}`)}</th> )
+            }
           </tr>
 
           {
-            this.getRows().map((row, idx) => {
+            this.getMarkedRangeRows().map((row, idx) => {
               return (
                 <tr
                   key={idx}
-                  className={this.classNames('el-date-table__row', { current: value && row.isWeekActive })}>
+                  className={this.classNames('el-date-table__row', { 'current': row.isWeekActive })}>
                   {
                     row.map((cell, idx) => (
                       <td className={this.getCellClasses(cell)} key={idx}>
@@ -410,19 +382,19 @@ export default class DateTable extends Component {
 DateTable.propTypes = {
   disabledDate: PropTypes.func,
   showWeekNumber: PropTypes.bool,
+  //minDate, maxDate: only valid in range mode. control date's start, end info
   minDate: PropTypes.instanceOf(Date),
   maxDate: PropTypes.instanceOf(Date),
-  selectionMode: PropTypes.oneOf(Object.keys(SELECTION_MODES).map(e=>SELECTION_MODES[e])),
+  selectionMode: PropTypes.oneOf(Object.keys(SELECTION_MODES).map(e => SELECTION_MODES[e])),
   // date view model, all visual view derive from this info
   date: PropTypes.instanceOf(Date).isRequired,
   // current date value, use picked.
-  value: PropTypes.instanceOf(Date).isRequired,
-  onChangeRange: PropTypes.func,
+  value: PropTypes.instanceOf(Date),
   /*
   (data, closePannel: boolean)=>()
 
     data: 
-      if selectionMode = range:
+      if selectionMode = range: // notify when ranges is change
         minDate: Date|null, 
         maxDate: Date|null
 
@@ -436,18 +408,23 @@ DateTable.propTypes = {
         date: Date
   */
   onPick: PropTypes.func.isRequired,
+
+  /*
+  ({
+    endDate: Date, 
+    selecting: boolean,
+  })=>()
+  */
+  //todo: merge onChangeRange with onPick
+  onChangeRange: PropTypes.func,
+  rangeState: PropTypes.shape({
+    endDate: PropTypes.date,
+    selecting: PropTypes.bool,
+  }),
+  firstDayOfWeek: PropTypes.range(0, 6),
 }
 
-//todo: remove redundant
 DateTable.defaultProps = {
-  selectionMode: "day",
-  showWeekNumber: false,
-  //todo: state or props, cur state
-  rangeState: {
-    endDate: null,
-    selecting: false,
-    row: null,
-    column: null
-  },
-  value: {}
+  selectionMode: 'day',
+  firstDayOfWeek: 0
 }

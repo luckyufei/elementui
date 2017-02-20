@@ -1,5 +1,5 @@
-import PopperJS from 'popper.js';
 import {require_condition} from './assert'
+var PopperJS;
 
 const MixinMethods = {
     //---------- start: public methods
@@ -118,6 +118,7 @@ const PopperReactMixinMethods = {
       require_condition(root, 'method `getPopperRootDom()` require a HTMLElement instance when componentDidMount is called')
       require_condition(ref, 'method `getRefDom()` require a HTMLElement instance when componentDidMount is called')
 
+      PopperJS =  require('popper.js')
       this.createPopper(root, ref)
       this._animateRef = window.requestAnimationFrame(this.updatePopper.bind(this));
 

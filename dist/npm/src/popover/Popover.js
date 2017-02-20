@@ -14,10 +14,6 @@ var _reactDom = require('react-dom');
 
 var _reactDom2 = _interopRequireDefault(_reactDom);
 
-var _popper = require('popper.js');
-
-var _popper2 = _interopRequireDefault(_popper);
-
 var _libs = require('../../libs');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -88,8 +84,30 @@ var Popover = function (_Component) {
           });
         }
       }
+    }
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate() {
+      var showPopper = this.state.showPopper;
 
-      this.initialPopper();
+
+      if (showPopper) {
+        if (this.popperJS) {
+          this.popperJS.update();
+        } else {
+          if (this.refs.arrow) {
+            this.refs.arrow.setAttribute('x-arrow', '');
+          }
+          var Popper = require('popper.js');
+          this.popperJS = new Popper(this.reference, this.refs.popper, {
+            placement: this.props.placement
+          });
+        }
+      } else {
+        if (this.popperJS) {
+          this.popperJS.destroy();
+        }
+      }
     }
   }, {
     key: 'componentWillReceiveProps',
@@ -104,17 +122,10 @@ var Popover = function (_Component) {
     key: 'componentWillUnmount',
     value: function componentWillUnmount() {
       this.reference.parentNode.replaceChild(this.reference.cloneNode(true), this.reference);
-    }
-  }, {
-    key: 'initialPopper',
-    value: function initialPopper() {
-      if (this.refs.arrow) {
-        this.refs.arrow.setAttribute('x-arrow', '');
-      }
 
-      this.popperJS = new _popper2.default(this.reference, this.refs.popper, {
-        placement: this.props.placement
-      });
+      if (this.popperJS) {
+        this.popperJS.destroy();
+      }
     }
   }, {
     key: 'handleMouseEnter',

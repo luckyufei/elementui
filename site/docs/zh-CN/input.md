@@ -38,7 +38,7 @@ render() {
     <Input
       icon="time"
       placeholder="请选择日期"
-      onClick={e => this.handleIconClick(e)}
+      onIconClick={e => this.handleIconClick(e)}
     />
   )
 }
@@ -414,24 +414,22 @@ render() {
 |-------------  |---------------- |---------------- |---------------------- |-------- |
 | type         | 类型   | string  | text/textarea | text |
 | value         | 绑定值           | string, number  | — | — |
-| maxlength     | 最大输入长度      | number          |  —  | — |
-| minlength     | 最小输入长度      | number          | — | — |
+| defaultValue  | 默认值           | string, number  | — | — |
+| maxLength     | 最大输入长度      | number          |  —  | — |
+| minLength     | 最小输入长度      | number          | — | — |
 | placeholder   | 输入框占位文本    | string          | — | — |
 | disabled      | 禁用            | boolean         | — | false   |
 | size          | 输入框尺寸，只在 `type!="textarea"` 时有效      | string          | large, small, mini  | — |
-| icon          | 输入框尾部图标    | string          | — | — |
-| iconSlot      | 输入框尾部图标    | ReactElement          | — | — |
+| icon          | 输入框尾部图标    | string/ReactElement          | — | — |
 | rows          | 输入框行数，只对 `type="textarea"` 有效  |  number | — |  2   |
 | autosize      | 自适应内容高度，只对 `type="textarea"` 有效，可传入对象，如，{ minRows: 2, maxRows: 6 }  |  boolean/object | — |  false   |
-
-### Input Events
-| 事件名称 | 说明 | 回调参数 |
-|---------|--------|---------|
-| handleIconClick | 点击 Input 内的图标时触发 | event |
-| handleInput | input输入内容时触发 | event |
-| handlePressEnter | enter键被按下时触发 | event |
-| handleFocus | 输入框获得焦点时触发 | event |
-| handleBlur | 输入框失去焦点时触发 | event |
+| autoComplete      | 原生属性，自动补全  |  string | on, off |  off   |
+| name      | 原生属性  |  string | - |  -   |
+| max      | 原生属性，设置最大值  |  * | - |  -   |
+| min      | 原生属性，设置最小值  |  * | - |  -   |
+| resize      | 控制是否能被用户缩放  |  string | none, both, horizontal, vertical |  -   |
+| autofocus      | 原生属性，自动获取焦点  |  boolean | - |  false   |
+| onIconClick | 点击 Input 内的图标的钩子函数 | function | — | — |
 
 ### Autocomplete API
 
@@ -442,6 +440,8 @@ render() {
 | value         | 必填值输入绑定值   | string  | — | — |
 | customItem  | 通过该参数指定自定义的输入建议列表项的组件名 | string  | — | — |
 | fetchSuggestions | 返回输入建议的方法，仅当你的输入建议数据 resolve 时，通过调用 callback(data:[]) 来返回它  | Function(queryString, callback)  | — | — |
+| popperClass | Autocomplete 下拉列表的类名  | string  | — | - |
+| triggerOnFocus | 是否在输入框 focus 时显示建议列表  | boolean  | — | true |
 
 ### Autocomplete Events
 | 事件名称 | 说明 | 回调参数 |

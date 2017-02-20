@@ -12,19 +12,15 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
-var _libs = require('../../libs');
-
 var _utils = require('../../libs/utils');
 
 var _BasePicker2 = require('./BasePicker');
 
 var _BasePicker3 = _interopRequireDefault(_BasePicker2);
 
-var _TimePanel = require('./panel/TimePanel');
+var _DateRangePanel = require('./panel/DateRangePanel');
 
-var _TimePanel2 = _interopRequireDefault(_TimePanel);
-
-var _constants = require('./constants');
+var _DateRangePanel2 = _interopRequireDefault(_DateRangePanel);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -34,34 +30,13 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-function converSelectRange(props) {
-  var selectableRange = [];
-  if (props.selectableRange) {
-    var ranges = props.selectableRange;
-    var parser = _constants.TYPE_VALUE_RESOLVER_MAP.datetimerange.parser;
-    var format = _constants.DEFAULT_FORMATS.timerange;
+var DateRangePicker = function (_BasePicker) {
+  _inherits(DateRangePicker, _BasePicker);
 
-    ranges = Array.isArray(ranges) ? ranges : [ranges];
-    selectableRange = ranges.map(function (range) {
-      return parser(range, format);
-    });
-  }
-  return selectableRange;
-}
-
-var TimePicker = function (_BasePicker) {
-  _inherits(TimePicker, _BasePicker);
-
-  _createClass(TimePicker, null, [{
+  _createClass(DateRangePicker, null, [{
     key: 'propTypes',
-
-    // why this is used, goto: http://exploringjs.com/es6/ch_classes.html
     get: function get() {
-      return Object.assign({
-        // '18:30:00 - 20:30:00'
-        // or ['09:30:00 - 12:00:00', '14:30:00 - 18:30:00']
-        selectableRange: _libs.PropTypes.oneOfType([_libs.PropTypes.string, _libs.PropTypes.arrayOf(_libs.PropTypes.string)])
-      }, _BasePicker3.default.propTypes);
+      return Object.assign({}, _BasePicker3.default.propTypes, (0, _utils.pick)(_DateRangePanel2.default.propTypes, ['value', 'showTime', 'shortcuts']));
     }
   }, {
     key: 'defaultProps',
@@ -70,42 +45,30 @@ var TimePicker = function (_BasePicker) {
     }
   }]);
 
-  function TimePicker(props) {
-    _classCallCheck(this, TimePicker);
+  function DateRangePicker(props) {
+    _classCallCheck(this, DateRangePicker);
 
-    var _this = _possibleConstructorReturn(this, (TimePicker.__proto__ || Object.getPrototypeOf(TimePicker)).call(this, props, 'time', {}));
-
-    _this._onSelectionChange = (0, _utils.debounce)(_this.onSelectionChange.bind(_this), 200);
-    return _this;
+    return _possibleConstructorReturn(this, (DateRangePicker.__proto__ || Object.getPrototypeOf(DateRangePicker)).call(this, props, 'daterange', {}));
   }
 
-  _createClass(TimePicker, [{
-    key: 'onSelectionChange',
-    value: function onSelectionChange(start, end) {
-      this.refs.inputRoot.refs.input.setSelectionRange(start, end);
-      this.refs.inputRoot.refs.input.focus();
-    }
-  }, {
+  _createClass(DateRangePicker, [{
     key: 'pickerPanel',
     value: function pickerPanel(state, props) {
-      var _this2 = this;
-
-      return _react2.default.createElement(_TimePanel2.default, _extends({}, props, {
-        currentDate: state.value,
-        onCancel: function onCancel() {
-          return _this2.setState({ pickerVisible: false });
-        },
-        onPicked: this.onPicked.bind(this),
-        onSelectRangeChange: this._onSelectionChange,
-        selectableRange: converSelectRange(props)
+      var value = state.value;
+      if (value instanceof Date) {
+        value = [value, null];
+      }
+      return _react2.default.createElement(_DateRangePanel2.default, _extends({}, props, {
+        value: value,
+        onPick: this.onPicked.bind(this)
       }));
     }
   }]);
 
-  return TimePicker;
+  return DateRangePicker;
 }(_BasePicker3.default);
 
-var _default = TimePicker;
+var _default = DateRangePicker;
 exports.default = _default;
 ;
 
@@ -114,11 +77,9 @@ var _temp = function () {
     return;
   }
 
-  __REACT_HOT_LOADER__.register(converSelectRange, 'converSelectRange', 'src/date-picker/TimePicker.jsx');
+  __REACT_HOT_LOADER__.register(DateRangePicker, 'DateRangePicker', 'src/date-picker/DateRangePicker.jsx');
 
-  __REACT_HOT_LOADER__.register(TimePicker, 'TimePicker', 'src/date-picker/TimePicker.jsx');
-
-  __REACT_HOT_LOADER__.register(_default, 'default', 'src/date-picker/TimePicker.jsx');
+  __REACT_HOT_LOADER__.register(_default, 'default', 'src/date-picker/DateRangePicker.jsx');
 }();
 
 ;
